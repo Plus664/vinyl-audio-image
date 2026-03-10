@@ -192,7 +192,7 @@
         <label for="audioInput" class="custom-file-upload">
           Choose Audio File...
         </label>
-        <input type="file" id="audioInput" accept="audio/*">
+        <input type="file" id="audioInput" accept=".mp3,.wav,.m4a,.ogg,audio/*">
         <span id="audioFileName" class="file-name">No file selected</span>
       </div>
 
@@ -209,8 +209,9 @@
         <label for="imageInput" class="custom-file-upload">
           Choose Record Image...
         </label>
-        <input type="file" id="imageInput" accept="image/png">
+        <input type="file" id="imageInput" accept="image/png,image/*">
         <span id="imageFileName" class="file-name">No file selected</span>
+        <span style="font-size: 0.7rem; color: #cc6666;">* Please select the original PNG file.</span>
       </div>
 
       <button id="decodeBtn">Load Record</button>
