@@ -3,272 +3,154 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Vinyl Audio Image - Steganographic Record</title>
-  <meta name="title" content="Vinyl Audio Image — Hide Music in PNG Art">
-  <meta name="description"
-    content="Turn your favorite music into unique vinyl record artwork. The audio data is hidden inside the PNG pixels and can be played back anytime.">
-
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://vinyl-audio-image.pages.dev/">
-  <meta property="og:title" content="Vinyl Audio Image — Hide Music in PNG Art">
-  <meta property="og:description"
-    content="Generate record-style imagery from audio. The music is embedded directly in the image file using steganography.">
-  <meta property="og:image" content="https://vinyl-audio-image.pages.dev/vinyl_audio_image_OGP.png">
-
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://vinyl-audio-image.pages.dev/">
-  <meta property="twitter:title" content="Vinyl Audio Image — Hide Music in PNG Art">
-  <meta property="twitter:description"
-    content="A steganographic experiment. Turn any MP3 into a visual record and play it back from the PNG.">
-  <meta property="twitter:image" content="https://vinyl-audio-image.pages.dev/vinyl_audio_image_OGP.png">
-
-  <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💿</text></svg>">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vinyl Audio Image</title>
   <style>
-    /* ===== COLORS & THEME (Edit here!) ===== */
     :root {
-      /* Main Colors */
       --bg: #111;
-      /* 全体の背景色 */
       --panel: #1a1a1a;
-      /* タブやコンテンツエリアの背景色 */
-      --text: #e0e0e0;
-      /* 基本のテキスト色 */
-      --text-muted: #888;
-      /* 暗めのテキスト色 */
-
-      /* Accent Colors */
       --accent: #4cafef;
-      /* アクティブなタブ、主要ボタン、タグのベース色 */
-      --accent-hover: #6ec6ff;
-      /* ボタンホバー時の色 */
-      --accent-dim: rgba(76, 175, 239, 0.1);
-      /* タブのアクティブ背景 */
-
-      /* Border & UI */
+      --text: #e0e0e0;
       --border: #333;
-      /* 区切り線、非アクティブボタン */
-      --button-bg: #333;
-      /* 通常ボタンの背景 */
-      --button-hover: #444;
-      /* 通常ボタンのホバー */
-
-      /* Record Colors (Used in JS) */
-      --record-base: #000;
-      /* レコードのベース色 (Canvas用) */
     }
 
-    /* ===== RESET & BASIC STYLES ===== */
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       margin: 0;
-      line-height: 1.6;
+      padding-bottom: 50px;
+      line-height: 1.5;
     }
 
     .container {
-      max-width: 800px;
+      width: 90%;
+      max-width: 500px;
       margin: 0 auto;
-      padding: 20px;
     }
 
     header {
-      padding: 60px 20px;
-      background: linear-gradient(to bottom, #222, var(--bg));
+      padding: 40px 15px;
+      text-align: center;
     }
 
     h1 {
       margin: 0;
-      color: white;
-      font-size: 2.8rem;
-      letter-spacing: -1.5px;
+      font-size: 1.8rem;
+      letter-spacing: -1px;
     }
 
-    .description {
-      color: var(--text-muted);
-      max-width: 620px;
-      margin: 25px auto;
-      font-size: 1.15rem;
-    }
-
-    .tagline {
-      display: inline-block;
-      background: #252525;
-      padding: 5px 15px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      color: var(--accent);
-      margin-bottom: 15px;
-      font-weight: bold;
-      border: 1px solid #333;
-    }
-
-    h3 {
-      font-size: 1.5rem;
-      color: white;
-      margin-top: 0;
-    }
-
-    /* ===== TABS ===== */
     .tabbar {
       display: flex;
       background: var(--panel);
-      border-radius: 8px 8px 0 0;
-      overflow: hidden;
-      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
     }
 
     .tabbtn {
       flex: 1;
-      padding: 18px;
+      padding: 15px;
       cursor: pointer;
       border: none;
       background: transparent;
-      color: var(--text-muted);
-      font-size: 17px;
+      color: #777;
+      font-size: 14px;
       font-weight: bold;
       transition: 0.3s;
     }
 
-    .tabbtn:hover {
-      color: white;
-    }
-
     .tabbtn.active {
-      background: var(--accent-dim);
-      color: white;
-      border-bottom: 4px solid var(--accent);
+      color: var(--accent);
+      border-bottom: 3px solid var(--accent);
     }
 
     .tab {
       display: none;
-      padding: 50px 30px;
-      background: var(--panel);
-      border-radius: 0 0 8px 8px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      padding: 30px 10px;
+      text-align: center;
     }
 
     .tab.active {
       display: block;
     }
 
-    /* ===== CUSTOM FILE INPUT (Englishized) ===== */
-    .file-input-wrapper {
-      margin: 30px 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-    }
-
-    /* Hide the default input */
-    input[type="file"] {
-      width: 0.1px;
-      height: 0.1px;
-      opacity: 0;
-      overflow: hidden;
-      position: absolute;
-      z-index: -1;
-    }
-
-    /* Style the label as a button */
-    .file-label {
-      display: inline-block;
-      padding: 12px 24px;
-      background-color: var(--button-bg);
-      color: white;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.2s;
-    }
-
-    .file-label:hover {
-      background-color: var(--button-hover);
-    }
-
-    /* Display selected filename */
-    .file-name {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      font-style: italic;
-    }
-
-    /* ===== CANVAS & IMAGES ===== */
-    canvas {
-      max-width: 100%;
-      height: auto;
-      border-radius: 50%;
-      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
-      background: var(--record-base);
-    }
-
-    #encodeCanvas,
-    #playCanvas {
-      width: 450px;
-      height: 450px;
+    /* Custom File Input */
+    .file-input-group {
       margin: 20px 0;
     }
 
-    /* ===== BUTTONS ===== */
-    button {
-      padding: 14px 28px;
-      margin: 10px 6px;
-      border: none;
-      border-radius: 4px;
-      background: var(--button-bg);
-      color: white;
-      font-weight: bold;
-      font-size: 1rem;
+    .custom-file-upload {
+      display: block;
+      background: #252525;
+      border: 1px dashed #444;
+      padding: 20px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: all .2s;
+      margin-bottom: 10px;
+      transition: 0.2s;
     }
 
-    button:hover {
-      background: var(--button-hover);
+    .custom-file-upload:hover {
+      border-color: var(--accent);
     }
 
-    /* Action buttons (Blue) */
+    input[type="file"] {
+      display: none;
+    }
+
+    .file-name {
+      font-size: 0.8rem;
+      color: #888;
+      display: block;
+      margin-top: 5px;
+      word-break: break-all;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      margin: 25px 0;
+      background: #000;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      background: #333;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
     #encodeBtn,
     #decodeBtn {
       background: var(--accent);
       color: #000;
     }
 
-    #encodeBtn:hover,
-    #decodeBtn:hover {
-      background: var(--accent-hover);
-    }
-
-    /* Play/Pause (Green/Red hint) */
-    #playBtn:hover {
-      background-color: #2e7d32;
-    }
-
-    #pauseBtn:hover {
-      background-color: #c62828;
-    }
-
-    /* ===== STATUS & NOTES ===== */
     #status,
     #playStatus {
-      margin: 20px 0;
+      margin: 15px 0;
+      font-size: 0.9rem;
       font-weight: bold;
-      font-size: 1.1rem;
-      color: white;
-      min-height: 1.5em;
+      color: var(--accent);
     }
 
-    .limit-note {
-      font-size: 0.85rem;
-      color: #666;
-      margin-top: 15px;
-    }
-
-    /* ===== ANIMATION ===== */
     .rotate {
       animation: spin 8s linear infinite;
     }
@@ -282,6 +164,12 @@
         transform: rotate(360deg)
       }
     }
+
+    @media (min-width: 600px) {
+      .container {
+        max-width: 600px;
+      }
+    }
   </style>
 </head>
 
@@ -289,69 +177,63 @@
 
   <header>
     <h1>Vinyl Audio Image</h1>
-    <div class="description">
-      <span class="tagline">Audio Steganography Tool</span>
-      <p>Turn music into unique vinyl record artwork and hide the song inside the image.</p>
-      <p>Generate a record-style image from audio. The music is embedded inside the PNG and can be played back later
-        using this tool.</p>
-    </div>
+    <p style="font-size: 0.9rem; color: #666;">Convert audio to steganographic art</p>
   </header>
 
   <div class="container">
     <div class="tabbar">
-      <button class="tabbtn active" onclick="openTab(0)">Record Generator</button>
-      <button class="tabbtn" onclick="openTab(1)">Music Player</button>
+      <button class="tabbtn active" onclick="openTab(0)">Generator</button>
+      <button class="tabbtn" onclick="openTab(1)">Player</button>
     </div>
 
     <div class="tab active">
-      <h3>Create New Record</h3>
-
-      <div class="file-input-wrapper">
-        <label for="audioInput" class="file-label">Choose Audio File...</label>
+      <h3>Create Record</h3>
+      <div class="file-input-group">
+        <label for="audioInput" class="custom-file-upload">
+          Choose Audio File...
+        </label>
         <input type="file" id="audioInput" accept="audio/*">
         <span id="audioFileName" class="file-name">No file selected</span>
       </div>
 
-      <button id="encodeBtn">Generate Artwork</button>
-      <button id="saveBtn">Download PNG</button>
+      <button id="encodeBtn">Generate Image</button>
+      <button id="saveBtn">Save PNG</button>
 
       <div id="status">Ready</div>
-      <p class="limit-note">* Max duration: 10 minutes (to prevent browser crash)</p>
-
-      <canvas id="encodeCanvas" width="4096" height="4096"></canvas>
+      <canvas id="encodeCanvas" width="2048" height="2048"></canvas>
     </div>
 
     <div class="tab">
-      <h3>Play From Image</h3>
-
-      <div class="file-input-wrapper">
-        <label for="imageInput" class="file-label">Choose Record Image...</label>
+      <h3>Play Record</h3>
+      <div class="file-input-group">
+        <label for="imageInput" class="custom-file-upload">
+          Choose Record Image...
+        </label>
         <input type="file" id="imageInput" accept="image/png">
         <span id="imageFileName" class="file-name">No file selected</span>
       </div>
 
       <button id="decodeBtn">Load Record</button>
-
-      <div id="playStatus">Select a record image</div>
+      <div id="playStatus">Waiting...</div>
 
       <canvas id="playCanvas" width="1024" height="1024"></canvas>
-
-      <br>
-      <button id="playBtn">Play</button>
-      <button id="pauseBtn">Pause</button>
+      <div style="display: flex; gap: 10px;">
+        <button id="playBtn">Play</button>
+        <button id="pauseBtn">Pause</button>
+      </div>
     </div>
   </div>
 
   <script>
-    const SIZE = 4096;
-    const MAX_DURATION = 600; // 10分 (秒)
+    const SIZE = 2048;
+    const MAX_DURATION = 600; // 10 minutes
 
-    // Update filenames in custom input labels
-    document.getElementById('audioInput').onchange = function () {
-      document.getElementById('audioFileName').textContent = this.files[0] ? this.files[0].name : "No file selected";
+    // UI: Show selected filename
+    document.getElementById('audioInput').onchange = e => {
+      document.getElementById('audioFileName').textContent = e.target.files[0]?.name || "No file selected";
     };
-    document.getElementById('imageInput').onchange = function () {
-      document.getElementById('imageFileName').textContent = this.files[0] ? this.files[0].name : "No file selected";
+    document.getElementById('imageInput').onchange = e => {
+      document.getElementById('imageFileName').textContent = e.target.files[0]?.name || "No file selected";
     };
 
     function openTab(n) {
@@ -361,6 +243,7 @@
       document.querySelectorAll(".tabbtn")[n].classList.add("active");
     }
 
+    /* --- Math Functions --- */
     function hashBytes(bytes) {
       let h = 0;
       for (let i = 0; i < bytes.length; i += 5000) {
@@ -382,51 +265,41 @@
       return { low: low / sum, mid: mid / sum, high: high / sum };
     }
 
+    /* --- Core Engine (2048px Optimized) --- */
     function drawRecord(ctx, samples, hash, spectrum) {
       const cx = SIZE / 2;
       const cy = SIZE / 2;
-
-      // Use CSS variable for record base color
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--record-base').trim();
+      ctx.fillStyle = "black";
       ctx.fillRect(0, 0, SIZE, SIZE);
 
       let theta = 0;
-      let r = 200;
-      const step = samples.length / 80000;
+      let r = SIZE * 0.08;
+      const iterations = 70000;
+      const step = samples.length / iterations;
       const palette = hash % 360;
-      const pattern = (hash % 7) + 1;
 
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i < iterations; i++) {
+        let s = samples[Math.floor(i * step)] || 0;
+        let amp = Math.abs(s) * (SIZE * 0.1);
+        r += (SIZE * 0.000005);
 
-      for (let i = 0; i < 80000; i++) {
-        let idx = Math.floor(i * step);
-        let s = samples[idx] || 0;
-        let amp = Math.abs(s) * 400;
-        r += 0.04;
+        let x = cx + (r + amp) * Math.cos(theta);
+        let y = cy + (r + amp) * Math.sin(theta);
 
-        let x = cx + (r + amp * Math.sin(i * pattern * .02)) * Math.cos(theta);
-        let y = cy + (r + amp * Math.sin(i * pattern * .02)) * Math.sin(theta);
-
-        let hue = (palette + i * .2) % 360;
-        let sat = 50 + spectrum.low * 50;
-        let light = 30 + spectrum.mid * 40 + Math.abs(s) * 30;
-
-        ctx.strokeStyle = `hsl(${hue},${sat}%,${light}%)`;
+        ctx.strokeStyle = `hsl(${(palette + i * 0.15) % 360}, 65%, ${35 + Math.abs(s) * 40}%)`;
         ctx.beginPath();
-
-        let x2 = cx + (r + amp * Math.cos(i * pattern * .02)) * Math.cos(theta + .015);
-        let y2 = cy + (r + amp * Math.cos(i * pattern * .02)) * Math.sin(theta + .015);
-
         ctx.moveTo(x, y);
-        ctx.lineTo(x2, y2);
+        ctx.lineTo(cx + (r + amp) * Math.cos(theta + 0.01), cy + (r + amp) * Math.sin(theta + 0.01));
         ctx.stroke();
-        theta += .012;
+        theta += 0.012;
       }
     }
 
+    // Improved Embedding (4 bits per channel)
     function embedData(ctx, bytes) {
       const header = new Uint8Array(8);
-      header[0] = 86; header[1] = 83; header[2] = 82; header[3] = 49;
+      header.set([86, 83, 82, 49]); // VSR1
       new DataView(header.buffer).setUint32(4, bytes.length);
 
       const full = new Uint8Array(header.length + bytes.length);
@@ -435,140 +308,127 @@
 
       const imgData = ctx.getImageData(0, 0, SIZE, SIZE);
       const data = imgData.data;
-      let bitIndex = 0;
 
-      for (let i = 0; i < data.length; i += 4) {
-        for (let j = 0; j < 3; j++) {
-          if (bitIndex + 2 <= full.length * 8) {
-            let byteIdx = Math.floor(bitIndex / 8);
-            let bitShift = 6 - (bitIndex % 8);
-            let val = (full[byteIdx] >> bitShift) & 3;
-            data[i + j] = (data[i + j] & 252) | val;
-            bitIndex += 2;
+      let byteIdx = 0;
+      let halfByte = false; // To track 4-bit chunks
+
+      for (let i = 0; i < data.length && byteIdx < full.length; i += 4) {
+        for (let j = 0; j < 3; j++) { // R, G, B
+          if (byteIdx < full.length) {
+            const val = halfByte ? (full[byteIdx] & 0x0F) : (full[byteIdx] >> 4);
+            data[i + j] = (data[i + j] & 0xF0) | val;
+
+            if (halfByte) byteIdx++;
+            halfByte = !halfByte;
           }
         }
       }
       ctx.putImageData(imgData, 0, 0);
     }
 
-    // --- Logic for Encoder ---
-    document.getElementById("encodeBtn").onclick = async () => {
-      let file = document.getElementById("audioInput").files[0];
-      if (!file) { alert("Please select an audio file."); return; }
-
-      document.getElementById("status").textContent = "Decoding audio...";
-      let buffer = await file.arrayBuffer();
-      let audioCtx = new AudioContext();
-
-      try {
-        let audioBuffer = await audioCtx.decodeAudioData(buffer.slice(0));
-
-        // Duration check
-        if (audioBuffer.duration > MAX_DURATION) {
-          alert(`File too long! (${Math.floor(audioBuffer.duration)}s). Max allowed is ${MAX_DURATION}s.`);
-          document.getElementById("status").textContent = "Process aborted.";
-          return;
-        }
-
-        document.getElementById("status").textContent = "Generating artwork & embedding data...";
-        // Small delay to let UI update
-        await new Promise(r => setTimeout(r, 50));
-
-        let samples = audioBuffer.getChannelData(0);
-        let bytes = new Uint8Array(buffer);
-        let hash = hashBytes(bytes);
-        let spectrum = analyzeSpectrum(samples);
-
-        let canvas = document.getElementById("encodeCanvas");
-        let ctx = canvas.getContext("2d");
-        drawRecord(ctx, samples, hash, spectrum);
-        embedData(ctx, bytes);
-
-        document.getElementById("status").textContent = "Record ready ✔";
-      } catch (e) {
-        alert("Error processing audio: " + e);
-        document.getElementById("status").textContent = "Error.";
-      }
-    };
-
-    document.getElementById("saveBtn").onclick = async () => {
-      let canvas = document.getElementById("encodeCanvas");
-      const blob = await new Promise(r => canvas.toBlob(r));
-      try {
-        const handle = await window.showSaveFilePicker({
-          suggestedName: "audio_record.png",
-          types: [{ description: "PNG Image", accept: { "image/png": [".png"] } }]
-        });
-        const writable = await handle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-      } catch (e) {
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "audio_record.png";
-        link.click();
-      }
-    };
-
-    // --- Logic for Player ---
     function extractData(ctx, w, h) {
-      let imgData = ctx.getImageData(0, 0, w, h);
-      let data = imgData.data;
-      let bytes = [];
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+      const bytes = [];
+
       let currentByte = 0;
-      let bitsCount = 0;
+      let halfByte = false;
 
       for (let i = 0; i < data.length; i += 4) {
         for (let j = 0; j < 3; j++) {
-          currentByte = (currentByte << 2) | (data[i + j] & 3);
-          bitsCount += 2;
-          if (bitsCount === 8) {
+          const val = data[i + j] & 0x0F;
+          if (!halfByte) {
+            currentByte = val << 4;
+          } else {
+            currentByte |= val;
             bytes.push(currentByte);
-            currentByte = 0;
-            bitsCount = 0;
-            if (bytes.length === 4 && (bytes[0] !== 86 || bytes[1] !== 83)) return new Uint8Array();
+            // Check header early
+            if (bytes.length === 4) {
+              if (bytes[0] !== 86 || bytes[1] !== 83) return new Uint8Array();
+            }
           }
+          halfByte = !halfByte;
+          // Stop if we have enough? (For speed we could stop here if we read the length)
         }
       }
       return new Uint8Array(bytes);
     }
 
+    /* --- Event Handlers --- */
+    document.getElementById("encodeBtn").onclick = async () => {
+      const file = document.getElementById("audioInput").files[0];
+      if (!file) return alert("Select audio!");
+
+      const status = document.getElementById("status");
+      status.textContent = "Decoding...";
+
+      const audioCtx = new AudioContext();
+      const arrayBuffer = await file.arrayBuffer();
+
+      try {
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+        if (audioBuffer.duration > MAX_DURATION) {
+          return alert("Too long! Max 10 min.");
+        }
+
+        status.textContent = "Painting...";
+        await new Promise(r => setTimeout(r, 50));
+
+        const samples = audioBuffer.getChannelData(0);
+        const canvas = document.getElementById("encodeCanvas");
+        const ctx = canvas.getContext("2d");
+
+        drawRecord(ctx, samples, hashBytes(new Uint8Array(arrayBuffer)), analyzeSpectrum(samples));
+        embedData(ctx, new Uint8Array(arrayBuffer));
+
+        status.textContent = "Complete! ✔";
+      } catch (e) {
+        status.textContent = "Error.";
+        console.error(e);
+      }
+    };
+
+    document.getElementById("saveBtn").onclick = () => {
+      const canvas = document.getElementById("encodeCanvas");
+      const link = document.createElement("a");
+      link.download = "vinyl_record.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+
     let audioCtxPlayer = new AudioContext();
     let audioBufferGlobal = null;
     let source = null;
-    let startTime = 0;
-    let pauseTime = 0;
+    let startTime = 0, pauseTime = 0;
 
     document.getElementById("decodeBtn").onclick = () => {
-      let file = document.getElementById("imageInput").files[0];
-      if (!file) { alert("Please select a PNG record."); return; }
+      const file = document.getElementById("imageInput").files[0];
+      if (!file) return alert("Select image!");
 
-      document.getElementById("playStatus").textContent = "Extracting music from image...";
-      let img = new Image();
+      const status = document.getElementById("playStatus");
+      status.textContent = "Reading pixels...";
+
+      const img = new Image();
       img.onload = () => {
-        let canvas = document.getElementById("playCanvas");
-        let ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const canvas = document.getElementById("playCanvas");
+        const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        let temp = document.createElement("canvas");
+        const temp = document.createElement("canvas");
         temp.width = img.width; temp.height = img.height;
-        let tctx = temp.getContext("2d");
+        const tctx = temp.getContext("2d");
         tctx.drawImage(img, 0, 0);
 
-        let raw = extractData(tctx, img.width, img.height);
-        if (raw[0] != 86 || raw[1] != 83 || raw[2] != 82) {
-          alert("No audio data found in this image.");
-          return;
-        }
+        const raw = extractData(tctx, img.width, img.height);
+        if (raw.length < 8) return alert("Invalid Record Image");
 
-        let len = new DataView(raw.buffer).getUint32(4);
-        let audioBytes = raw.slice(8, 8 + len);
+        const len = new DataView(raw.buffer).getUint32(4);
+        const audioData = raw.slice(8, 8 + len);
 
-        audioCtxPlayer.decodeAudioData(audioBytes.buffer).then(buf => {
+        audioCtxPlayer.decodeAudioData(audioData.buffer).then(buf => {
           audioBufferGlobal = buf;
-          document.getElementById("playStatus").textContent = "Record loaded! Ready to play.";
-        }).catch(e => alert("Decoding failed."));
+          status.textContent = "Loaded!";
+        }).catch(() => status.textContent = "Load failed.");
       };
       img.src = URL.createObjectURL(file);
     };
@@ -579,8 +439,8 @@
       source = audioCtxPlayer.createBufferSource();
       source.buffer = audioBufferGlobal;
       source.connect(audioCtxPlayer.destination);
-      startTime = audioCtxPlayer.currentTime - pauseTime;
       source.start(0, pauseTime);
+      startTime = audioCtxPlayer.currentTime - pauseTime;
       document.getElementById("playCanvas").classList.add("rotate");
     };
 
@@ -592,6 +452,7 @@
       document.getElementById("playCanvas").classList.remove("rotate");
     };
   </script>
+
 </body>
 
 </html>
