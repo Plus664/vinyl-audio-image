@@ -17,3 +17,7 @@ You can later load the image and play the music back.
 ## Demo
 
 https://vinyl-audio-image.pages.dev
+
+## License
+
+MIT
