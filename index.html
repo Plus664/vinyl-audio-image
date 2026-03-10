@@ -1,85 +1,276 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
   <meta charset="UTF-8">
-  <title>Vinyl Audio Image</title>
+  <title>Vinyl Audio Image - Steganographic Record</title>
+  <meta name="title" content="Vinyl Audio Image — Hide Music in PNG Art">
+  <meta name="description"
+    content="Turn your favorite music into unique vinyl record artwork. The audio data is hidden inside the PNG pixels and can be played back anytime.">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://vinyl-audio-image.pages.dev/">
+  <meta property="og:title" content="Vinyl Audio Image — Hide Music in PNG Art">
+  <meta property="og:description"
+    content="Generate record-style imagery from audio. The music is embedded directly in the image file using steganography.">
+  <meta property="og:image" content="https://vinyl-audio-image.pages.dev/vinyl_audio_image_OGP.png">
+
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://vinyl-audio-image.pages.dev/">
+  <meta property="twitter:title" content="Vinyl Audio Image — Hide Music in PNG Art">
+  <meta property="twitter:description"
+    content="A steganographic experiment. Turn any MP3 into a visual record and play it back from the PNG.">
+  <meta property="twitter:image" content="https://vinyl-audio-image.pages.dev/vinyl_audio_image_OGP.png">
+
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💿</text></svg>">
 
   <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: sans-serif;
-      text-align: center;
-      margin: 0;
+    /* ===== COLORS & THEME (Edit here!) ===== */
+    :root {
+      /* Main Colors */
+      --bg: #111;
+      /* 全体の背景色 */
+      --panel: #1a1a1a;
+      /* タブやコンテンツエリアの背景色 */
+      --text: #e0e0e0;
+      /* 基本のテキスト色 */
+      --text-muted: #888;
+      /* 暗めのテキスト色 */
+
+      /* Accent Colors */
+      --accent: #4cafef;
+      /* アクティブなタブ、主要ボタン、タグのベース色 */
+      --accent-hover: #6ec6ff;
+      /* ボタンホバー時の色 */
+      --accent-dim: rgba(76, 175, 239, 0.1);
+      /* タブのアクティブ背景 */
+
+      /* Border & UI */
+      --border: #333;
+      /* 区切り線、非アクティブボタン */
+      --button-bg: #333;
+      /* 通常ボタンの背景 */
+      --button-hover: #444;
+      /* 通常ボタンのホバー */
+
+      /* Record Colors (Used in JS) */
+      --record-base: #000;
+      /* レコードのベース色 (Canvas用) */
     }
 
+    /* ===== RESET & BASIC STYLES ===== */
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      padding: 60px 20px;
+      background: linear-gradient(to bottom, #222, var(--bg));
+    }
+
+    h1 {
+      margin: 0;
+      color: white;
+      font-size: 2.8rem;
+      letter-spacing: -1.5px;
+    }
+
+    .description {
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 25px auto;
+      font-size: 1.15rem;
+    }
+
+    .tagline {
+      display: inline-block;
+      background: #252525;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      color: var(--accent);
+      margin-bottom: 15px;
+      font-weight: bold;
+      border: 1px solid #333;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+      color: white;
+      margin-top: 0;
+    }
+
+    /* ===== TABS ===== */
     .tabbar {
       display: flex;
-      background: #1a1a1a;
-      border-bottom: 2px solid #333;
+      background: var(--panel);
+      border-radius: 8px 8px 0 0;
+      overflow: hidden;
+      border-bottom: 2px solid var(--border);
     }
 
     .tabbtn {
       flex: 1;
-      padding: 14px;
+      padding: 18px;
       cursor: pointer;
       border: none;
-      background: #1a1a1a;
-      color: #aaa;
-      font-size: 16px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 17px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .tabbtn:hover {
+      color: white;
     }
 
     .tabbtn.active {
-      background: #111;
+      background: var(--accent-dim);
       color: white;
-      border-bottom: 3px solid #4cafef;
+      border-bottom: 4px solid var(--accent);
     }
 
     .tab {
       display: none;
-      padding: 25px;
+      padding: 50px 30px;
+      background: var(--panel);
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .tab.active {
       display: block;
     }
 
-    canvas {
-      width: 420px;
-      height: 420px;
-      border-radius: 50%;
-      box-shadow: 0 0 25px black;
-      margin-top: 20px;
+    /* ===== CUSTOM FILE INPUT (Englishized) ===== */
+    .file-input-wrapper {
+      margin: 30px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
     }
 
-    button {
-      padding: 10px 20px;
-      margin: 8px;
-      border: none;
-      background: #333;
+    /* Hide the default input */
+    input[type="file"] {
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      overflow: hidden;
+      position: absolute;
+      z-index: -1;
+    }
+
+    /* Style the label as a button */
+    .file-label {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: var(--button-bg);
       color: white;
+      border-radius: 4px;
       cursor: pointer;
-      transition: .15s;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+
+    .file-label:hover {
+      background-color: var(--button-hover);
+    }
+
+    /* Display selected filename */
+    .file-name {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+
+    /* ===== CANVAS & IMAGES ===== */
+    canvas {
+      max-width: 100%;
+      height: auto;
+      border-radius: 50%;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+      background: var(--record-base);
+    }
+
+    #encodeCanvas,
+    #playCanvas {
+      width: 450px;
+      height: 450px;
+      margin: 20px 0;
+    }
+
+    /* ===== BUTTONS ===== */
+    button {
+      padding: 14px 28px;
+      margin: 10px 6px;
+      border: none;
+      border-radius: 4px;
+      background: var(--button-bg);
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all .2s;
     }
 
     button:hover {
-      background: #444;
+      background: var(--button-hover);
     }
 
-    button:active {
-      transform: scale(.95);
-      background: #222;
+    /* Action buttons (Blue) */
+    #encodeBtn,
+    #decodeBtn {
+      background: var(--accent);
+      color: #000;
     }
 
-    #status {
-      margin-top: 10px;
-      color: #aaa;
+    #encodeBtn:hover,
+    #decodeBtn:hover {
+      background: var(--accent-hover);
     }
 
+    /* Play/Pause (Green/Red hint) */
+    #playBtn:hover {
+      background-color: #2e7d32;
+    }
+
+    #pauseBtn:hover {
+      background-color: #c62828;
+    }
+
+    /* ===== STATUS & NOTES ===== */
+    #status,
+    #playStatus {
+      margin: 20px 0;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: white;
+      min-height: 1.5em;
+    }
+
+    .limit-note {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 15px;
+    }
+
+    /* ===== ANIMATION ===== */
     .rotate {
-      animation: spin 7s linear infinite;
+      animation: spin 8s linear infinite;
     }
 
     @keyframes spin {
@@ -92,401 +283,315 @@
       }
     }
   </style>
-
 </head>
 
 <body>
 
-  <div class="tabbar">
-    <button class="tabbtn active" onclick="openTab(0)">Record Generator</button>
-    <button class="tabbtn" onclick="openTab(1)">Music Player</button>
-  </div>
+  <header>
+    <h1>Vinyl Audio Image</h1>
+    <div class="description">
+      <span class="tagline">Audio Steganography Tool</span>
+      <p>Turn music into unique vinyl record artwork and hide the song inside the image.</p>
+      <p>Generate a record-style image from audio. The music is embedded inside the PNG and can be played back later
+        using this tool.</p>
+    </div>
+  </header>
 
-  <div class="tab active">
+  <div class="container">
+    <div class="tabbar">
+      <button class="tabbtn active" onclick="openTab(0)">Record Generator</button>
+      <button class="tabbtn" onclick="openTab(1)">Music Player</button>
+    </div>
 
-    <h3>Generate Record</h3>
+    <div class="tab active">
+      <h3>Create New Record</h3>
 
-    <input type="file" id="audioInput" accept="audio/*"><br>
+      <div class="file-input-wrapper">
+        <label for="audioInput" class="file-label">Choose Audio File...</label>
+        <input type="file" id="audioInput" accept="audio/*">
+        <span id="audioFileName" class="file-name">No file selected</span>
+      </div>
 
-    <button id="encodeBtn">Create Record</button> <button id="saveBtn">Save Image</button>
+      <button id="encodeBtn">Generate Artwork</button>
+      <button id="saveBtn">Download PNG</button>
 
-    <div id="status"></div>
+      <div id="status">Ready</div>
+      <p class="limit-note">* Max duration: 10 minutes (to prevent browser crash)</p>
 
-    <canvas id="encodeCanvas" width="4096" height="4096"></canvas>
+      <canvas id="encodeCanvas" width="4096" height="4096"></canvas>
+    </div>
 
-  </div>
+    <div class="tab">
+      <h3>Play From Image</h3>
 
-  <div class="tab">
+      <div class="file-input-wrapper">
+        <label for="imageInput" class="file-label">Choose Record Image...</label>
+        <input type="file" id="imageInput" accept="image/png">
+        <span id="imageFileName" class="file-name">No file selected</span>
+      </div>
 
-    <h3>Play From Record Image</h3>
+      <button id="decodeBtn">Load Record</button>
 
-    <input type="file" id="imageInput" accept="image/png"><br>
+      <div id="playStatus">Select a record image</div>
 
-    <button id="decodeBtn">Load Record</button>
+      <canvas id="playCanvas" width="1024" height="1024"></canvas>
 
-    <br>
-
-    <canvas id="playCanvas" width="1024" height="1024"></canvas>
-
-    <br>
-
-    <button id="playBtn">Play</button> <button id="pauseBtn">Pause</button>
-
+      <br>
+      <button id="playBtn">Play</button>
+      <button id="pauseBtn">Pause</button>
+    </div>
   </div>
 
   <script>
+    const SIZE = 4096;
+    const MAX_DURATION = 600; // 10分 (秒)
 
-    const SIZE = 4096
+    // Update filenames in custom input labels
+    document.getElementById('audioInput').onchange = function () {
+      document.getElementById('audioFileName').textContent = this.files[0] ? this.files[0].name : "No file selected";
+    };
+    document.getElementById('imageInput').onchange = function () {
+      document.getElementById('imageFileName').textContent = this.files[0] ? this.files[0].name : "No file selected";
+    };
 
     function openTab(n) {
-
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"))
-      document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"))
-
-      document.querySelectorAll(".tab")[n].classList.add("active")
-      document.querySelectorAll(".tabbtn")[n].classList.add("active")
-
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab")[n].classList.add("active");
+      document.querySelectorAll(".tabbtn")[n].classList.add("active");
     }
 
-    /* ===== 音声特徴 ===== */
-
     function hashBytes(bytes) {
-
-      let h = 0
-
+      let h = 0;
       for (let i = 0; i < bytes.length; i += 5000) {
-        h = ((h << 5) - h) + bytes[i]
-        h |= 0
+        h = ((h << 5) - h) + bytes[i];
+        h |= 0;
       }
-
-      return Math.abs(h)
-
+      return Math.abs(h);
     }
 
     function analyzeSpectrum(samples) {
-
-      let low = 0, mid = 0, high = 0
-
+      let low = 0, mid = 0, high = 0;
       for (let i = 0; i < samples.length; i += 200) {
-
-        let v = Math.abs(samples[i])
-
-        if (i % 3 === 0) low += v
-        else if (i % 3 === 1) mid += v
-        else high += v
-
+        let v = Math.abs(samples[i]);
+        if (i % 3 === 0) low += v;
+        else if (i % 3 === 1) mid += v;
+        else high += v;
       }
-
-      let sum = low + mid + high
-
-      return {
-        low: low / sum,
-        mid: mid / sum,
-        high: high / sum
-      }
-
+      let sum = low + mid + high || 1;
+      return { low: low / sum, mid: mid / sum, high: high / sum };
     }
-
-    /* ===== レコード描画 ===== */
 
     function drawRecord(ctx, samples, hash, spectrum) {
+      const cx = SIZE / 2;
+      const cy = SIZE / 2;
 
-      const cx = SIZE / 2
-      const cy = SIZE / 2
+      // Use CSS variable for record base color
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--record-base').trim();
+      ctx.fillRect(0, 0, SIZE, SIZE);
 
-      ctx.fillStyle = "black"
-      ctx.fillRect(0, 0, SIZE, SIZE)
+      let theta = 0;
+      let r = 200;
+      const step = samples.length / 80000;
+      const palette = hash % 360;
+      const pattern = (hash % 7) + 1;
 
-      let theta = 0
-      let r = 200
+      ctx.lineWidth = 1.5;
 
-      const step = samples.length / 60000
+      for (let i = 0; i < 80000; i++) {
+        let idx = Math.floor(i * step);
+        let s = samples[idx] || 0;
+        let amp = Math.abs(s) * 400;
+        r += 0.04;
 
-      const palette = hash % 360
-      const pattern = (hash % 7) + 1
+        let x = cx + (r + amp * Math.sin(i * pattern * .02)) * Math.cos(theta);
+        let y = cy + (r + amp * Math.sin(i * pattern * .02)) * Math.sin(theta);
 
-      ctx.lineWidth = 1.2
+        let hue = (palette + i * .2) % 360;
+        let sat = 50 + spectrum.low * 50;
+        let light = 30 + spectrum.mid * 40 + Math.abs(s) * 30;
 
-      for (let i = 0; i < 60000; i++) {
+        ctx.strokeStyle = `hsl(${hue},${sat}%,${light}%)`;
+        ctx.beginPath();
 
-        let idx = Math.floor(i * step)
-        let s = samples[idx] || 0
+        let x2 = cx + (r + amp * Math.cos(i * pattern * .02)) * Math.cos(theta + .015);
+        let y2 = cy + (r + amp * Math.cos(i * pattern * .02)) * Math.sin(theta + .015);
 
-        let amp = Math.abs(s) * 300
-
-        r += 0.05
-
-        let x = cx + (r + amp * Math.sin(i * pattern * .02)) * Math.cos(theta)
-        let y = cy + (r + amp * Math.sin(i * pattern * .02)) * Math.sin(theta)
-
-        let hue = (palette + i * .3) % 360
-        let sat = 60 + spectrum.low * 40
-        let light = 40 + spectrum.mid * 20 + Math.abs(s) * 20
-
-        ctx.strokeStyle = `hsl(${hue},${sat}%,${light}%)`
-
-        ctx.beginPath()
-
-        let x2 = cx + (r + amp * Math.cos(i * pattern * .02)) * Math.cos(theta + .01)
-        let y2 = cy + (r + amp * Math.cos(i * pattern * .02)) * Math.sin(theta + .01)
-
-        ctx.moveTo(x, y)
-        ctx.lineTo(x2, y2)
-        ctx.stroke()
-
-        theta += .015
-
+        ctx.moveTo(x, y);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        theta += .012;
       }
-
     }
-
-    /* ===== データ埋め込み ===== */
 
     function embedData(ctx, bytes) {
+      const header = new Uint8Array(8);
+      header[0] = 86; header[1] = 83; header[2] = 82; header[3] = 49;
+      new DataView(header.buffer).setUint32(4, bytes.length);
 
-      const header = new Uint8Array(8)
+      const full = new Uint8Array(header.length + bytes.length);
+      full.set(header);
+      full.set(bytes, 8);
 
-      header[0] = 86
-      header[1] = 83
-      header[2] = 82
-      header[3] = 49
-
-      new DataView(header.buffer).setUint32(4, bytes.length)
-
-      const full = new Uint8Array(header.length + bytes.length)
-
-      full.set(header)
-      full.set(bytes, 8)
-
-      const imgData = ctx.getImageData(0, 0, SIZE, SIZE)
-      const data = imgData.data
-
-      let bitIndex = 0
-
-      function getBits(n) {
-
-        let val = 0
-
-        for (let i = 0; i < n; i++) {
-
-          let byteIndex = Math.floor(bitIndex / 8)
-          let bit = 7 - (bitIndex % 8)
-
-          if (byteIndex < full.length) {
-            val |= ((full[byteIndex] >> bit) & 1) << (n - i - 1)
-          }
-
-          bitIndex++
-
-        }
-
-        return val
-
-      }
+      const imgData = ctx.getImageData(0, 0, SIZE, SIZE);
+      const data = imgData.data;
+      let bitIndex = 0;
 
       for (let i = 0; i < data.length; i += 4) {
-
-        let r = getBits(2)
-        let g = getBits(2)
-        let b = getBits(2)
-
-        data[i] = (data[i] & 252) | r
-        data[i + 1] = (data[i + 1] & 252) | g
-        data[i + 2] = (data[i + 2] & 252) | b
-
+        for (let j = 0; j < 3; j++) {
+          if (bitIndex + 2 <= full.length * 8) {
+            let byteIdx = Math.floor(bitIndex / 8);
+            let bitShift = 6 - (bitIndex % 8);
+            let val = (full[byteIdx] >> bitShift) & 3;
+            data[i + j] = (data[i + j] & 252) | val;
+            bitIndex += 2;
+          }
+        }
       }
-
-      ctx.putImageData(imgData, 0, 0)
-
+      ctx.putImageData(imgData, 0, 0);
     }
 
-    /* ===== 生成 ===== */
-
+    // --- Logic for Encoder ---
     document.getElementById("encodeBtn").onclick = async () => {
+      let file = document.getElementById("audioInput").files[0];
+      if (!file) { alert("Please select an audio file."); return; }
 
-      let file = document.getElementById("audioInput").files[0]
+      document.getElementById("status").textContent = "Decoding audio...";
+      let buffer = await file.arrayBuffer();
+      let audioCtx = new AudioContext();
 
-      if (!file) {
-        alert("音楽ファイルを選択してください")
-        return
+      try {
+        let audioBuffer = await audioCtx.decodeAudioData(buffer.slice(0));
+
+        // Duration check
+        if (audioBuffer.duration > MAX_DURATION) {
+          alert(`File too long! (${Math.floor(audioBuffer.duration)}s). Max allowed is ${MAX_DURATION}s.`);
+          document.getElementById("status").textContent = "Process aborted.";
+          return;
+        }
+
+        document.getElementById("status").textContent = "Generating artwork & embedding data...";
+        // Small delay to let UI update
+        await new Promise(r => setTimeout(r, 50));
+
+        let samples = audioBuffer.getChannelData(0);
+        let bytes = new Uint8Array(buffer);
+        let hash = hashBytes(bytes);
+        let spectrum = analyzeSpectrum(samples);
+
+        let canvas = document.getElementById("encodeCanvas");
+        let ctx = canvas.getContext("2d");
+        drawRecord(ctx, samples, hash, spectrum);
+        embedData(ctx, bytes);
+
+        document.getElementById("status").textContent = "Record ready ✔";
+      } catch (e) {
+        alert("Error processing audio: " + e);
+        document.getElementById("status").textContent = "Error.";
       }
-
-      document.getElementById("status").textContent = "Loading..."
-
-      let buffer = await file.arrayBuffer()
-      let bytes = new Uint8Array(buffer)
-
-      let audioCtx = new AudioContext()
-
-      let audioBuffer = await audioCtx.decodeAudioData(buffer.slice(0))
-      let samples = audioBuffer.getChannelData(0)
-
-      let hash = hashBytes(bytes)
-      let spectrum = analyzeSpectrum(samples)
-
-      let canvas = document.getElementById("encodeCanvas")
-      let ctx = canvas.getContext("2d")
-
-      drawRecord(ctx, samples, hash, spectrum)
-
-      embedData(ctx, bytes)
-
-      document.getElementById("status").textContent = "Record ready ✔"
-
-    }
-
-    /* ===== 保存 ===== */
+    };
 
     document.getElementById("saveBtn").onclick = async () => {
+      let canvas = document.getElementById("encodeCanvas");
+      const blob = await new Promise(r => canvas.toBlob(r));
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: "audio_record.png",
+          types: [{ description: "PNG Image", accept: { "image/png": [".png"] } }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+      } catch (e) {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "audio_record.png";
+        link.click();
+      }
+    };
 
-      let canvas = document.getElementById("encodeCanvas")
-
-      const blob = await new Promise(r => canvas.toBlob(r))
-
-      const handle = await window.showSaveFilePicker({
-
-        suggestedName: "record.png",
-
-        types: [{
-          description: "PNG Image",
-          accept: { "image/png": [".png"] }
-        }]
-
-      })
-
-      const writable = await handle.createWritable()
-
-      await writable.write(blob)
-      await writable.close()
-
-    }
-
-    /* ===== 復元 ===== */
-
+    // --- Logic for Player ---
     function extractData(ctx, w, h) {
-
-      let imgData = ctx.getImageData(0, 0, w, h)
-      let data = imgData.data
-
-      let bits = []
+      let imgData = ctx.getImageData(0, 0, w, h);
+      let data = imgData.data;
+      let bytes = [];
+      let currentByte = 0;
+      let bitsCount = 0;
 
       for (let i = 0; i < data.length; i += 4) {
-
-        bits.push(data[i] & 3)
-        bits.push(data[i + 1] & 3)
-        bits.push(data[i + 2] & 3)
-
+        for (let j = 0; j < 3; j++) {
+          currentByte = (currentByte << 2) | (data[i + j] & 3);
+          bitsCount += 2;
+          if (bitsCount === 8) {
+            bytes.push(currentByte);
+            currentByte = 0;
+            bitsCount = 0;
+            if (bytes.length === 4 && (bytes[0] !== 86 || bytes[1] !== 83)) return new Uint8Array();
+          }
+        }
       }
-
-      let bytes = []
-
-      for (let i = 0; i < bits.length; i += 4) {
-
-        let val = (bits[i] << 6) | (bits[i + 1] << 4) | (bits[i + 2] << 2) | (bits[i + 3])
-        bytes.push(val)
-
-      }
-
-      return new Uint8Array(bytes)
-
+      return new Uint8Array(bytes);
     }
 
-    /* ===== player ===== */
-
-    let audioCtx = new AudioContext()
-    let audioBufferGlobal = null
-    let source = null
-
-    let startTime = 0
-    let pauseTime = 0
+    let audioCtxPlayer = new AudioContext();
+    let audioBufferGlobal = null;
+    let source = null;
+    let startTime = 0;
+    let pauseTime = 0;
 
     document.getElementById("decodeBtn").onclick = () => {
+      let file = document.getElementById("imageInput").files[0];
+      if (!file) { alert("Please select a PNG record."); return; }
 
-      let file = document.getElementById("imageInput").files[0]
-
-      if (!file) {
-        alert("PNG画像を選択してください")
-        return
-      }
-
-      let img = new Image()
-
+      document.getElementById("playStatus").textContent = "Extracting music from image...";
+      let img = new Image();
       img.onload = () => {
+        let canvas = document.getElementById("playCanvas");
+        let ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        let canvas = document.getElementById("playCanvas")
-        let ctx = canvas.getContext("2d")
+        let temp = document.createElement("canvas");
+        temp.width = img.width; temp.height = img.height;
+        let tctx = temp.getContext("2d");
+        tctx.drawImage(img, 0, 0);
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-
-        let temp = document.createElement("canvas")
-        temp.width = img.width
-        temp.height = img.height
-
-        let tctx = temp.getContext("2d")
-        tctx.drawImage(img, 0, 0)
-
-        let raw = extractData(tctx, img.width, img.height)
-
-        if (raw[0] != 86 || raw[1] != 83 || raw[2] != 82 || raw[3] != 49) {
-          alert("音声データが見つかりません")
-          return
+        let raw = extractData(tctx, img.width, img.height);
+        if (raw[0] != 86 || raw[1] != 83 || raw[2] != 82) {
+          alert("No audio data found in this image.");
+          return;
         }
 
-        let len = new DataView(raw.buffer).getUint32(4)
+        let len = new DataView(raw.buffer).getUint32(4);
+        let audioBytes = raw.slice(8, 8 + len);
 
-        let audioBytes = raw.slice(8, 8 + len)
-
-        audioCtx.decodeAudioData(audioBytes.buffer).then(buf => {
-          audioBufferGlobal = buf
-        })
-
-      }
-
-      img.src = URL.createObjectURL(file)
-
-    }
-
-    /* ===== 再生 ===== */
+        audioCtxPlayer.decodeAudioData(audioBytes.buffer).then(buf => {
+          audioBufferGlobal = buf;
+          document.getElementById("playStatus").textContent = "Record loaded! Ready to play.";
+        }).catch(e => alert("Decoding failed."));
+      };
+      img.src = URL.createObjectURL(file);
+    };
 
     document.getElementById("playBtn").onclick = () => {
-
-      if (!audioBufferGlobal) {
-        alert("先に画像を読み込んでください")
-        return
-      }
-
-      source = audioCtx.createBufferSource()
-
-      source.buffer = audioBufferGlobal
-      source.connect(audioCtx.destination)
-
-      startTime = audioCtx.currentTime - pauseTime
-
-      source.start(0, pauseTime)
-
-      document.getElementById("playCanvas").classList.add("rotate")
-
-    }
-
-    /* ===== pause ===== */
+      if (!audioBufferGlobal) return;
+      if (source) source.stop();
+      source = audioCtxPlayer.createBufferSource();
+      source.buffer = audioBufferGlobal;
+      source.connect(audioCtxPlayer.destination);
+      startTime = audioCtxPlayer.currentTime - pauseTime;
+      source.start(0, pauseTime);
+      document.getElementById("playCanvas").classList.add("rotate");
+    };
 
     document.getElementById("pauseBtn").onclick = () => {
-
       if (source) {
-
-        source.stop()
-
-        pauseTime = audioCtx.currentTime - startTime
-
+        source.stop();
+        pauseTime = audioCtxPlayer.currentTime - startTime;
       }
-
-      document.getElementById("playCanvas").classList.remove("rotate")
-
-    }
-
+      document.getElementById("playCanvas").classList.remove("rotate");
+    };
   </script>
-
 </body>
 
 </html>
